@@ -1,4 +1,4 @@
-package edu.co.arsw.gridmaster;
+package edu.co.arsw.gridmaster.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
