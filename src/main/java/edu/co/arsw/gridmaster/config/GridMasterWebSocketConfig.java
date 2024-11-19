@@ -22,4 +22,3 @@ public class GridMasterWebSocketConfig implements WebSocketMessageBrokerConfigur
     }
 
 }
-
