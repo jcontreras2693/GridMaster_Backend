@@ -18,7 +18,9 @@ public class GridMasterWebSocketConfig implements WebSocketMessageBrokerConfigur
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/stompendpoint").withSockJS();
+        registry.addEndpoint("/stompendpoint")
+                .setAllowedOrigins("https://gentle-coast-03f74f10f.5.azurestaticapps.net")
+                .withSockJS();
     }
 
 }
