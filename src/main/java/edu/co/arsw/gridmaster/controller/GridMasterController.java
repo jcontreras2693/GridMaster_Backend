@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@CrossOrigin(origins = "https://gentle-coast-03f74f10f.5.azurestaticapps.net/")
+@CrossOrigin(origins = "https://gentle-coast-03f74f10f.5.azurestaticapps.net/*")
 @RequestMapping(value = "/games")
 public class GridMasterController {
 

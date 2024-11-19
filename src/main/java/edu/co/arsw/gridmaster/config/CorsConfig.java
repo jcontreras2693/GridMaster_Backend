@@ -25,7 +25,7 @@ public class CorsConfig implements WebMvcConfigurer {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
         config.setAllowedOrigins(
-                Arrays.asList("http://localhost:8080", "https://gentle-coast-03f74f10f.5.azurestaticapps.net/"));
+                Arrays.asList("http://localhost:8080", "https://gentle-coast-03f74f10f.5.azurestaticapps.net/*"));
         config.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept", "Authorization"));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         source.registerCorsConfiguration("/**", config);
