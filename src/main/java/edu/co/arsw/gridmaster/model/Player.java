@@ -19,9 +19,9 @@ public class Player {
     private Tuple<Integer, Integer> lastPosition;
     private Set<Tuple<Integer, Integer>> trace;
     private Integer scoreboardPosition;
+    private PlayerRole playerRole;
 
-    @JsonCreator
-    public Player(@JsonProperty("name") String name){
+    public Player(String name){
         this.name = name;
         this.score = new AtomicInteger(1);
         this.color = new int[]{0, 0, 0};
@@ -29,6 +29,12 @@ public class Player {
         this.currentPosition = new Tuple<>(0, 0);
         this.lastPosition = new Tuple<>(0, 0);
         this.scoreboardPosition = 0;
+    }
+
+    @JsonCreator
+    public Player(@JsonProperty("name") String name, PlayerRole playerRole){
+        this(name);
+        this.playerRole = playerRole;
     }
 
     public String getName() {
@@ -85,6 +91,14 @@ public class Player {
 
     public void setScoreboardPosition(Integer scoreboardPosition) {
         this.scoreboardPosition = scoreboardPosition;
+    }
+
+    public PlayerRole getPlayerRole() {
+        return playerRole;
+    }
+
+    public void setPlayerRole(PlayerRole playerRole) {
+        this.playerRole = playerRole;
     }
 
     public void generatePosition(Integer x, Integer y) {

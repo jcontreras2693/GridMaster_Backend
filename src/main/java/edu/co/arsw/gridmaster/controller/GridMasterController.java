@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+
 @RestController
 @CrossOrigin(origins = "https://gentle-coast-03f74f10f.5.azurestaticapps.net/")
 @RequestMapping(value = "/games")
@@ -64,15 +66,6 @@ public class GridMasterController {
         }
     }
 
-    @RequestMapping(value = "{code}/time", method = RequestMethod.GET)
-    public ResponseEntity<?> getTimeByCode(@PathVariable Integer code){
-        try {
-            return new ResponseEntity<>(gridMasterService.getTime(code), HttpStatus.ACCEPTED);
-        } catch (GridMasterException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }
-
     // POST Requests
 
     @RequestMapping(method = RequestMethod.POST)
@@ -87,6 +80,17 @@ public class GridMasterController {
     // PUT REQUESTS
 
     @RequestMapping(value = "{code}", method = RequestMethod.PUT)
+    public ResponseEntity<?> updateGame(@PathVariable Integer code,
+                                        @RequestBody HashMap<String, Integer> settings){
+        try {
+            gridMasterService.updateGame(code, settings);
+            return new ResponseEntity<>(HttpStatus.ACCEPTED);
+        } catch (GridMasterException e) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+    }
+
+    @RequestMapping(value = "{code}/started", method = RequestMethod.PUT)
     public ResponseEntity<?> startGame(@PathVariable Integer code){
         try {
             gridMasterService.startGame(code);
@@ -143,6 +147,16 @@ public class GridMasterController {
             gridMasterService.deleteGridMaster(code);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } catch (GridMasterException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @RequestMapping(value = "{code}/players/{name}", method = RequestMethod.DELETE)
+    public ResponseEntity<?> deletePlayer(@PathVariable Integer code, @PathVariable String name){
+        try {
+            gridMasterService.deletePlayer(code, name);
+            return new ResponseEntity<>(HttpStatus.ACCEPTED);
+        } catch(GridMasterException e){
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }

@@ -2,10 +2,7 @@ package edu.co.arsw.gridmaster.model;
 
 import edu.co.arsw.gridmaster.persistance.Tuple;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -23,20 +20,14 @@ public class GridMaster {
 
     public GridMaster() {
         this.code = (int) ((Math.random() * (9999 - 1000) + 1000));
-        this.time = 300;
-        this.maxPlayers = 4;
         this.scores = new ConcurrentHashMap<>();
         this.players = new ConcurrentHashMap<>();
-        this.dimension = new Tuple<>(100, 100);
         this.color = new Color();
-        this.boxes = new ArrayList<>();
         this.gameState = GameState.WAITING_FOR_PLAYERS;
-        for(int i = 0; i < dimension.getFirst(); i++){
-            boxes.add(new ArrayList<>());
-            for(int j = 0; j < dimension.getSecond(); j++){
-                boxes.get(i).add(new Box( new Tuple<>(i, j) ));
-            }
-        }
+        this.time = 300;
+        this.dimension = new Tuple<>(100, 100);
+        this.maxPlayers = 4;
+        this.boxes = new ArrayList<>();
     }
 
     public Integer getCode() {
@@ -133,28 +124,14 @@ public class GridMaster {
                 '}';
     }
 
-    public void printBoard(){
-        boolean bool = false;
-        for(int i = 0; i < dimension.getFirst(); i++){
-            for(int j = 0; j < dimension.getSecond(); j++){
-                for(Player player : players.values()){
-                    if(player.isLocatedAt(i, j)){
-                        System.out.print(player.getName() + "           ");
-                        bool = true;
-                    }
-                }
-                if(!bool){
-                    System.out.print(boxes.get(i).get(j).getOwner() + "             ");
-                }
-                bool = false;
-            }
-            System.out.println();
-        }
-    }
-
     public void addPlayer(Player player){
         players.put(player.getName(), player);
         scores.put(player.getName(), player.getScore().get());
+    }
+
+    public void removePlayer(String name){
+        players.remove(name);
+        scores.remove(name);
     }
 
     public void setPlayerPositionInScoreboard(){
@@ -172,6 +149,55 @@ public class GridMaster {
             if(!key.equals("EMPTY")){
                 players.get(key).setScoreboardPosition(position);
                 position++;
+            }
+        }
+    }
+
+    public Map<String, Integer> topTen(){
+        ConcurrentHashMap<String, Integer> scores = this.getScores();
+        ConcurrentHashMap<String, Integer> topTen = new ConcurrentHashMap<>();
+        int cont = 0;
+        for(String key : scores.keySet()){
+            if(cont == 10){
+                break;
+            }
+            topTen.put(key, scores.get(key));
+            cont++;
+        }
+        Map<String, Integer> newScores = topTen.entrySet()
+                .stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        LinkedHashMap::new
+                ));
+
+        int sum = scores.values().stream()
+                .mapToInt(a -> a)
+                .sum();
+
+        newScores.put("EMPTY", 10000 - sum);
+        return newScores;
+    }
+
+    public String getFormatTime(){
+        int time = this.getTime();
+        int minutes = time / 60;
+        int seconds = time % 60;
+        return String.format("%02d:%02d", minutes, seconds);
+    }
+
+    public void updateSettings(HashMap<String, Integer> settings){
+        this.time = (settings.get("minutes") * 60) + settings.get("seconds");
+        this.dimension = new Tuple<>(settings.get("xDimension"), settings.get("yDimension"));
+        this.maxPlayers = settings.get("maxPlayers");
+        this.boxes = new ArrayList<>();
+        for(int i = 0; i < dimension.getFirst(); i++){
+            boxes.add(new ArrayList<>());
+            for(int j = 0; j < dimension.getSecond(); j++){
+                boxes.get(i).add(new Box( new Tuple<>(i, j) ));
             }
         }
     }
