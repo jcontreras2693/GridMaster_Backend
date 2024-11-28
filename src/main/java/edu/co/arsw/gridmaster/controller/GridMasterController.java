@@ -16,6 +16,7 @@ import java.util.HashMap;
 
 @RestController
 @CrossOrigin(origins = "https://gentle-coast-03f74f10f.5.azurestaticapps.net/")
+// @CrossOrigin(origins = "http://localhost:5500/")
 @RequestMapping(value = "/games")
 public class GridMasterController {
 
@@ -42,6 +43,15 @@ public class GridMasterController {
     public ResponseEntity<?> getScoreboardByCode(@PathVariable Integer code){
         try {
             return new ResponseEntity<>(gridMasterService.getScoreboard(code), HttpStatus.ACCEPTED);
+        } catch (GridMasterException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @RequestMapping(value = "{code}/time", method = RequestMethod.GET)
+    public ResponseEntity<?> getTimeByCode(@PathVariable Integer code){
+        try {
+            return new ResponseEntity<>(gridMasterService.getTime(code), HttpStatus.ACCEPTED);
         } catch (GridMasterException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }

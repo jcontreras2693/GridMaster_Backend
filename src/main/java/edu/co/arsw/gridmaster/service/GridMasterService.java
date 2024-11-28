@@ -14,12 +14,10 @@ import java.util.*;
 public class GridMasterService {
 
     GridMasterPersistence gridMasterPersistence;
-    SimpMessagingTemplate msgt;
 
     @Autowired
     public GridMasterService(GridMasterPersistence gridMasterPersistence, SimpMessagingTemplate msgt){
         this.gridMasterPersistence = gridMasterPersistence;
-        this.msgt = msgt;
     }
 
     public Set<GridMaster> getAllGames(){
@@ -65,22 +63,15 @@ public class GridMasterService {
         game.setGameState(GameState.STARTED);
         startTime(game);
         setPositions(game);
+        System.out.println(game.getPlayers());
     }
 
     public void startTime(GridMaster game){
         Timer timer = new Timer();
-        Integer gameCode = game.getCode();
 
         TimerTask task = new TimerTask() {
             @Override
             public void run() {
-                // Sending scoreboard
-                Map<String, Integer> scoreboard = game.topTen();
-                msgt.convertAndSend("/topic/game/" + gameCode + "/score", scoreboard);
-                // Sending time
-                String time = game.getFormatTime();
-                msgt.convertAndSend("/topic/game/" + gameCode + "/time", time);
-
                 game.decrementTime();
                 if(game.getTime() < 0){
                     timer.cancel();
