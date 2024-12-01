@@ -1,6 +1,6 @@
 package edu.co.arsw.gridmaster.model;
 
-import edu.co.arsw.gridmaster.persistance.Tuple;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -8,14 +8,23 @@ import java.util.stream.Collectors;
 
 public class GridMaster {
 
+    @JsonProperty
     private Integer code;
+    @JsonProperty
     private Integer time;
+    @JsonProperty
     private Integer maxPlayers;
+    @JsonProperty
     private ConcurrentHashMap<String, Integer> scores;
+    @JsonProperty
     private ConcurrentHashMap<String, Player> players;
-    private Tuple<Integer, Integer> dimension;
+    @JsonProperty
+    private int[] dimension;
+    @JsonProperty
     private ArrayList<ArrayList<Box>> boxes;
+    @JsonProperty
     private Color color;
+    @JsonProperty
     private GameState gameState;
 
     public GridMaster() {
@@ -25,7 +34,7 @@ public class GridMaster {
         this.color = new Color();
         this.gameState = GameState.WAITING_FOR_PLAYERS;
         this.time = 300;
-        this.dimension = new Tuple<>(100, 100);
+        this.dimension = new int[]{100, 100};
         this.maxPlayers = 4;
         this.boxes = new ArrayList<>();
     }
@@ -82,15 +91,15 @@ public class GridMaster {
         this.boxes = boxes;
     }
 
-    public Box getBox(Tuple<Integer, Integer> position){
-        return boxes.get(position.getFirst()).get(position.getSecond());
+    public Box getBox(int[] position){
+        return boxes.get(position[0]).get(position[1]);
     }
 
-    public Tuple<Integer, Integer> getDimension() {
+    public int[] getDimension() {
         return dimension;
     }
 
-    public void setDimension(Tuple<Integer, Integer> dimension) {
+    public void setDimension(int[] dimension) {
         this.dimension = dimension;
     }
 
@@ -191,13 +200,13 @@ public class GridMaster {
 
     public void updateSettings(HashMap<String, Integer> settings){
         this.time = (settings.get("minutes") * 60) + settings.get("seconds");
-        this.dimension = new Tuple<>(settings.get("xDimension"), settings.get("yDimension"));
+        this.dimension = new int[]{settings.get("xDimension"), settings.get("yDimension")};
         this.maxPlayers = settings.get("maxPlayers");
         this.boxes = new ArrayList<>();
-        for(int i = 0; i < dimension.getFirst(); i++){
+        for(int i = 0; i < dimension[0]; i++){
             boxes.add(new ArrayList<>());
-            for(int j = 0; j < dimension.getSecond(); j++){
-                boxes.get(i).add(new Box( new Tuple<>(i, j) ));
+            for(int j = 0; j < dimension[1]; j++){
+                boxes.get(i).add(new Box( new int[]{i, j} ));
             }
         }
     }
