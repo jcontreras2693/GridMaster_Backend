@@ -12,6 +12,7 @@ import java.util.*;
 public class GridMasterService {
 
     GridMasterPersistence gridMasterPersistence;
+    GridMaster currentGame;
 
     @Autowired
     public GridMasterService(GridMasterPersistence gridMasterPersistence){
@@ -23,16 +24,16 @@ public class GridMasterService {
     }
 
     public GridMaster getGameByCode(Integer code) throws GridMasterException {
-        return gridMasterPersistence.getGameByCode(code);
+        return (currentGame.getCode().equals(code)) ? currentGame : gridMasterPersistence.getGameByCode(code);
     }
 
     public ArrayList<Player> getPlayers(Integer code) throws GridMasterException {
-        GridMaster game = gridMasterPersistence.getGameByCode(code);
+        GridMaster game = (currentGame.getCode().equals(code)) ? currentGame : gridMasterPersistence.getGameByCode(code);
         return new ArrayList<>(game.getPlayers().values());
     }
 
     public Player getPlayerByName(Integer code, String name) throws GridMasterException {
-        GridMaster game = gridMasterPersistence.getGameByCode(code);
+        GridMaster game = (currentGame.getCode().equals(code)) ? currentGame : gridMasterPersistence.getGameByCode(code);
         Player player = game.getPlayerByName(name);
         if(player == null){
             throw new PlayerNotFoundException();
@@ -41,56 +42,31 @@ public class GridMasterService {
     }
 
     public Map<String, Integer> getScoreboard(Integer code) throws GridMasterException {
-        GridMaster game = gridMasterPersistence.getGameByCode(code);
+        GridMaster game = (currentGame.getCode().equals(code)) ? currentGame : gridMasterPersistence.getGameByCode(code);
         return game.topTen();
     }
 
-    public String getTime(Integer code) throws GridMasterException {
-        GridMaster game = gridMasterPersistence.getGameByCode(code);
-        return game.getFormatTime();
+    public int getTime(Integer code) throws GridMasterException {
+        GridMaster game = (currentGame.getCode().equals(code)) ? currentGame : gridMasterPersistence.getGameByCode(code);
+        return game.getTime();
     }
 
     public Integer createGridMaster() throws GridMasterException {
         GridMaster newGame = new GridMaster();
         gridMasterPersistence.saveGame(newGame);
+        currentGame = newGame;
         return newGame.getCode();
     }
 
     public void startGame(Integer code) throws GridMasterException {
-        GridMaster game = gridMasterPersistence.getGameByCode(code);
+        GridMaster game = (currentGame.getCode().equals(code)) ? currentGame : gridMasterPersistence.getGameByCode(code);
         game.setGameState(GameState.STARTED);
-        startTime(game);
         setPositions(game);
         gridMasterPersistence.saveGame(game);
     }
 
-    public void startTime(GridMaster game){
-        Timer timer = new Timer();
-
-        TimerTask task = new TimerTask() {
-            @Override
-            public void run(){
-                game.decrementTime();
-                if(game.getTime() < 0){
-                    timer.cancel();
-                    try {
-                        endGame(game.getCode());
-                    } catch (GridMasterException e) {
-                        System.out.println("Error finishing game.");
-                    }
-                }
-                try {
-                    gridMasterPersistence.saveGame(game);
-                } catch (GridMasterException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        };
-        timer.scheduleAtFixedRate(task, 0, 1000);
-    }
-
     public void endGame(Integer code) throws GridMasterException{
-        GridMaster game = gridMasterPersistence.getGameByCode(code);
+        GridMaster game = (currentGame.getCode().equals(code)) ? currentGame : gridMasterPersistence.getGameByCode(code);
         game.setGameState(GameState.FINISHED);
         game.setPlayerPositionInScoreboard();
         gridMasterPersistence.saveGame(game);
@@ -112,7 +88,7 @@ public class GridMasterService {
     }
 
     public void addPlayer(Integer code, String name) throws GridMasterException {
-        GridMaster game = gridMasterPersistence.getGameByCode(code);
+        GridMaster game = (currentGame.getCode().equals(code)) ? currentGame : gridMasterPersistence.getGameByCode(code);
         if(game.getMaxPlayers() == game.getPlayers().size()){
             throw new GameException("Room is full.");
         }
@@ -139,10 +115,11 @@ public class GridMasterService {
             }
             player.addToTrace(new int[]{position[0], position[1]});
         }
+        gridMasterPersistence.saveGame(game);
     }
 
     public void move(Integer code, String playerName, int[] newPosition) throws GridMasterException {
-        GridMaster game = gridMasterPersistence.getGameByCode(code);
+        GridMaster game = (currentGame.getCode().equals(code)) ? currentGame : gridMasterPersistence.getGameByCode(code);
         Integer x = newPosition[0];
         Integer y = newPosition[1];
         if(x < 0 || y < 0 || x >= game.getDimension()[0] || y >= game.getDimension()[1]){
@@ -152,7 +129,6 @@ public class GridMasterService {
         int[] oldPosition = new int[]{player.getPosition()[0], player.getPosition()[1]};
         player.setLastPosition(oldPosition);
         changeScore(game, player, game.getBox(newPosition), game.getBox(oldPosition));
-        System.out.println(game);
         gridMasterPersistence.saveGame(game);
     }
 
@@ -183,11 +159,16 @@ public class GridMasterService {
                     game.updateScoreOfPlayer(opponent.getName(), opponent.getScore().get());
                 }
             }
+            try {
+                gridMasterPersistence.saveGame(game);
+            } catch (GridMasterException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
     public void updateGame(Integer code, HashMap<String, Integer> settings) throws GridMasterException{
-        GridMaster game = gridMasterPersistence.getGameByCode(code);
+        GridMaster game = (currentGame.getCode().equals(code)) ? currentGame : gridMasterPersistence.getGameByCode(code);
         game.updateSettings(settings);
         gridMasterPersistence.saveGame(game);
     }
@@ -197,7 +178,7 @@ public class GridMasterService {
     }
 
     public void deletePlayer(Integer code, String name) throws GridMasterException{
-        GridMaster game = gridMasterPersistence.getGameByCode(code);
+        GridMaster game = (currentGame.getCode().equals(code)) ? currentGame : gridMasterPersistence.getGameByCode(code);
         if(!game.getPlayers().containsKey(name)){
             throw new PlayerNotFoundException();
         }

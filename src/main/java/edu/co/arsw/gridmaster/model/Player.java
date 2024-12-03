@@ -134,6 +134,7 @@ public class Player {
         return "Player{" +
                 "name='" + name + '\'' +
                 ", position=" + currentPosition[0] + " " + currentPosition[1] +
+                ", trace" + trace.toString() +
                 '}';
     }
 }

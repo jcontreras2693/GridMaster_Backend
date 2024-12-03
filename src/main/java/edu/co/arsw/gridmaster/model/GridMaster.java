@@ -119,10 +119,6 @@ public class GridMaster {
         this.gameState = gameState;
     }
 
-    public void decrementTime(){
-        this.time--;
-    }
-
     @Override
     public String toString() {
         return "Game{" +
@@ -189,13 +185,6 @@ public class GridMaster {
 
         newScores.put("EMPTY", 10000 - sum);
         return newScores;
-    }
-
-    public String getFormatTime(){
-        int time = this.getTime();
-        int minutes = time / 60;
-        int seconds = time % 60;
-        return String.format("%02d:%02d", minutes, seconds);
     }
 
     public void updateSettings(HashMap<String, Integer> settings){

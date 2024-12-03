@@ -32,7 +32,6 @@ public class GridMasterPersistence {
             String json = objectMapper.writeValueAsString(game);
             jedis.set(code, json);
         } catch (Exception e) {
-            System.out.println(e);
             throw new GamePersistanceException();
         }
     }
