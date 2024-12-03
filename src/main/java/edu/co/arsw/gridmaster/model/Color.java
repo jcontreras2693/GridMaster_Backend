@@ -4,8 +4,13 @@ import edu.co.arsw.gridmaster.model.exceptions.NoMoreColorsException;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class Color{
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonSetter;
 
+public class Color {
+
+    @JsonProperty
     private ConcurrentLinkedQueue<int[]> colors;
 
     public Color() {
@@ -32,10 +37,17 @@ public class Color{
         colors.add(new int[]{255, 105, 180}); // Hot Pink
     }
 
+    @JsonGetter("color")
     public int[] getColor() throws NoMoreColorsException {
-        if(colors.isEmpty()){
-            throw new NoMoreColorsException();
+        if (colors.isEmpty()) {
+            // Handle empty state more gracefully
+            return new int[]{0, 0, 0};  // Default color (black) if no colors are left
         }
         return colors.poll();
+    }
+
+    @JsonSetter("color")
+    public void setColor(int[] color) {
+        colors.add(color);
     }
 }
