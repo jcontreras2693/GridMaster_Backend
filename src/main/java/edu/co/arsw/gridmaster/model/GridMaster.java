@@ -187,7 +187,7 @@ public class GridMaster {
         return newScores;
     }
 
-    public void updateSettings(HashMap<String, Integer> settings){
+    public void updateSettings(Map<String, Integer> settings){
         this.time = (settings.get("minutes") * 60) + settings.get("seconds");
         this.dimension = new int[]{settings.get("xDimension"), settings.get("yDimension")};
         this.maxPlayers = settings.get("maxPlayers");

@@ -27,6 +27,7 @@ public class Player {
     private Integer scoreboardPosition;
     @JsonProperty
     private PlayerRole playerRole;
+    private final Random rand;
 
     @JsonCreator
     public Player(@JsonProperty("name") String name, PlayerRole playerRole){
@@ -38,6 +39,7 @@ public class Player {
         this.lastPosition = new int[]{0, 0};
         this.scoreboardPosition = 0;
         this.playerRole = playerRole;
+        this.rand = new Random();
     }
 
     public String getName() {
@@ -105,7 +107,6 @@ public class Player {
     }
 
     public void generatePosition(Integer x, Integer y) {
-        Random rand = new Random();
         this.currentPosition = new int[]{rand.nextInt(x), rand.nextInt(y)};
     }
 
