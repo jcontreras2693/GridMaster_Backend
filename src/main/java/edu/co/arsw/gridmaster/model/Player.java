@@ -3,6 +3,7 @@ package edu.co.arsw.gridmaster.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
@@ -16,26 +17,23 @@ public class Player {
     @JsonProperty
     private int[] color;
     @JsonProperty
-    private AtomicInteger score;
+    private Position currentPosition;
     @JsonProperty
-    private int[] currentPosition;
+    private Position lastPosition;
     @JsonProperty
-    private int[] lastPosition;
-    @JsonProperty
-    private Set<int[]> trace;
+    private Set<Position> trace;
     @JsonProperty
     private Integer scoreboardPosition;
     @JsonProperty
     private PlayerRole playerRole;
 
     @JsonCreator
-    public Player(@JsonProperty("name") String name, PlayerRole playerRole){
+    public Player(@JsonProperty("name") String name, PlayerRole playerRole) {
         this.name = name;
-        this.score = new AtomicInteger(1);
         this.color = new int[]{0, 0, 0};
         this.trace = ConcurrentHashMap.newKeySet();
-        this.currentPosition = new int[]{0, 0};
-        this.lastPosition = new int[]{0, 0};
+        this.currentPosition = new Position(0, 0);
+        this.lastPosition = new Position(0, 0);
         this.scoreboardPosition = 0;
         this.playerRole = playerRole;
     }
@@ -56,40 +54,24 @@ public class Player {
         this.color = color;
     }
 
-    public AtomicInteger getScore() {
-        return score;
+    public Position getLastPosition() {
+        return this.lastPosition;
     }
 
-    public void setScore(AtomicInteger score) {
-        this.score = score;
-    }
-
-    public int[] getLastPosition() {
-        return lastPosition;
-    }
-
-    public void setLastPosition(int[] oldPosition){
+    public void setLastPosition(Position oldPosition) {
         this.lastPosition = oldPosition;
     }
 
-    public void incrementScore(){
-        this.score.incrementAndGet();
+    public Position getPosition() {
+        return this.currentPosition;
     }
 
-    public void decrementScore(){
-        this.score.decrementAndGet();
-    }
-
-    public int[] getPosition() {
-        return currentPosition;
-    }
-
-    public void setPosition(int[] position) {
+    public void setPosition(Position position) {
         this.currentPosition = position;
     }
 
     public Integer getScoreboardPosition() {
-        return scoreboardPosition;
+        return this.scoreboardPosition;
     }
 
     public void setScoreboardPosition(Integer scoreboardPosition) {
@@ -97,7 +79,7 @@ public class Player {
     }
 
     public PlayerRole getPlayerRole() {
-        return playerRole;
+        return this.playerRole;
     }
 
     public void setPlayerRole(PlayerRole playerRole) {
@@ -106,35 +88,33 @@ public class Player {
 
     public void generatePosition(Integer x, Integer y) {
         Random rand = new Random();
-        this.currentPosition = new int[]{rand.nextInt(x), rand.nextInt(y)};
+        this.currentPosition = new Position(rand.nextInt(x), rand.nextInt(y));
     }
 
-    public boolean isLocatedAt(Integer x, Integer y){
-        return (Objects.equals(this.currentPosition[0], x) && Objects.equals(this.currentPosition[1], y));
-    }
-
-    public Set<int[]> getTrace(){
+    public Set<Position> getTrace() {
         return this.trace;
     }
 
-    public void setTrace(Set<int[]> newTrace){
+    public void setTrace(Set<Position> newTrace) {
         this.trace = newTrace;
     }
 
-    public void addToTrace(int[] tuple){
-        trace.add(tuple);
+    public void addToTrace(Position tuple) {
+        this.trace.add(tuple);
     }
 
-    public void removeFromTrace(int[] tuple){
-        trace.remove(tuple);
+    public void removeFromTrace(Position tuple) {
+        this.trace.remove(tuple);
     }
 
     @Override
     public String toString() {
         return "Player{" +
                 "name='" + name + '\'' +
-                ", position=" + currentPosition[0] + " " + currentPosition[1] +
-                ", trace" + trace.toString() +
+                ", score=" + trace.size() +
+                ", currentPosition=" + currentPosition +
+                ", lastPosition=" + lastPosition +
+                ", trace=" + trace.toString() +
                 '}';
     }
 }

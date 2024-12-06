@@ -34,7 +34,7 @@ public class GridMaster {
         this.color = new Color();
         this.gameState = GameState.WAITING_FOR_PLAYERS;
         this.time = 300;
-        this.dimension = new int[]{100, 100};
+        this.dimension = new int[]{50, 50};
         this.maxPlayers = 4;
         this.boxes = new ArrayList<>();
     }
@@ -91,8 +91,8 @@ public class GridMaster {
         this.boxes = boxes;
     }
 
-    public Box getBox(int[] position){
-        return boxes.get(position[0]).get(position[1]);
+    public Box getBox(Position position){
+        return boxes.get(position.getX()).get(position.getY());
     }
 
     public int[] getDimension() {
@@ -131,7 +131,7 @@ public class GridMaster {
 
     public void addPlayer(Player player){
         players.put(player.getName(), player);
-        scores.put(player.getName(), player.getScore().get());
+        scores.put(player.getName(), player.getTrace().size());
     }
 
     public void removePlayer(String name){
@@ -151,25 +151,21 @@ public class GridMaster {
                 ));
         int position = 1;
         for(String key : orderedScores.keySet()){
-            if(!key.equals("EMPTY")){
-                players.get(key).setScoreboardPosition(position);
-                position++;
-            }
+            players.get(key).setScoreboardPosition(position);
         }
     }
 
     public Map<String, Integer> topTen(){
-        ConcurrentHashMap<String, Integer> scores = this.getScores();
         ConcurrentHashMap<String, Integer> topTen = new ConcurrentHashMap<>();
-        int cont = 0;
-        for(String key : scores.keySet()){
-            if(cont == 10){
-                break;
-            }
-            topTen.put(key, scores.get(key));
-            cont++;
-        }
-        Map<String, Integer> newScores = topTen.entrySet()
+//        int cont = 0;
+//        for(String key : scores.keySet()){
+//            if(cont == 10){
+//                break;
+//            }
+//            topTen.put(key, scores.get(key));
+//            cont++;
+//        }
+        Map<String, Integer> newScores = this.scores.entrySet()
                 .stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                 .collect(Collectors.toMap(
@@ -179,11 +175,6 @@ public class GridMaster {
                         LinkedHashMap::new
                 ));
 
-        int sum = scores.values().stream()
-                .mapToInt(a -> a)
-                .sum();
-
-        newScores.put("EMPTY", 10000 - sum);
         return newScores;
     }
 
@@ -195,8 +186,9 @@ public class GridMaster {
         for(int i = 0; i < dimension[0]; i++){
             boxes.add(new ArrayList<>());
             for(int j = 0; j < dimension[1]; j++){
-                boxes.get(i).add(new Box( new int[]{i, j} ));
+                boxes.get(i).add(new Box( new Position(i, j) ));
             }
         }
     }
 }
+

@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.Transaction;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -27,10 +28,13 @@ public class GridMasterPersistence {
     }
 
     public void saveGame(GridMaster game) throws GridMasterException {
+        String code = game.getCode().toString();
         try (Jedis jedis = jedisPool.getResource()) {
-            String code = game.getCode().toString();
+            jedis.watch(code);
+            Transaction t = jedis.multi();
             String json = objectMapper.writeValueAsString(game);
-            jedis.set(code, json);
+            t.set(code, json);
+            t.exec();
         } catch (Exception e) {
             throw new GamePersistanceException();
         }

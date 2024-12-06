@@ -1,6 +1,7 @@
 package edu.co.arsw.gridmaster.controller;
 
 import edu.co.arsw.gridmaster.model.Player;
+import edu.co.arsw.gridmaster.model.Position;
 import edu.co.arsw.gridmaster.model.exceptions.GameException;
 import edu.co.arsw.gridmaster.model.exceptions.GameNotFoundException;
 import edu.co.arsw.gridmaster.model.exceptions.GridMasterException;
@@ -14,8 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 
 @RestController
-@CrossOrigin(origins = "https://gentle-coast-03f74f10f.5.azurestaticapps.net/")
-// @CrossOrigin(origins = "http://localhost:5500/")
+// @CrossOrigin(origins = "https://gentle-coast-03f74f10f.5.azurestaticapps.net/")
+@CrossOrigin(origins = "http://localhost:5500/")
 @RequestMapping(value = "/games")
 public class GridMasterController {
 
@@ -129,7 +130,7 @@ public class GridMasterController {
     @RequestMapping(value = "{code}/players/{name}", method = RequestMethod.PUT)
     public ResponseEntity<?> movePlayer(@PathVariable Integer code,
                                         @PathVariable String name,
-                                        @RequestBody int[] newPosition){
+                                        @RequestBody Position newPosition){
         try {
             gridMasterService.move(code, name, newPosition);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
