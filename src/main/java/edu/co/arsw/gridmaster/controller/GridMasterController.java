@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 
 @RestController
-// @CrossOrigin(origins = "https://gentle-coast-03f74f10f.5.azurestaticapps.net/")
-@CrossOrigin(origins = "http://localhost:5500/")
+@CrossOrigin(origins = "https://gentle-coast-03f74f10f.5.azurestaticapps.net/")
+// @CrossOrigin(origins = "http://localhost:5500/")
 @RequestMapping(value = "/games")
 public class GridMasterController {
 

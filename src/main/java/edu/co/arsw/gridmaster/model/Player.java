@@ -100,7 +100,6 @@ public class Player {
     }
 
     public void addToTrace(Position tuple) {
-        System.out.println("Tuple to add: " + tuple);
         this.trace.add(tuple);
     }
 
