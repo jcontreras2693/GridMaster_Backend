@@ -100,11 +100,12 @@ public class Player {
     }
 
     public void addToTrace(Position tuple) {
+        System.out.println("Tuple to add: " + tuple);
         this.trace.add(tuple);
     }
 
-    public void removeFromTrace(Position tuple) {
-        this.trace.remove(tuple);
+    public void removeFromTrace(Integer x, Integer y) {
+        trace.removeIf(p -> p.getX() == x && p.getY() == y);
     }
 
     @Override

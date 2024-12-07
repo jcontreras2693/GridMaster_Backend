@@ -118,7 +118,6 @@ public class GridMasterService {
 
     public void move(Integer code, String playerName, Position newPosition) throws GridMasterException {
         GridMaster game = gridMasterPersistence.getGameByCode(code);
-        System.out.println("Game Obtained: " + game);
         Integer x = newPosition.getX();
         Integer y = newPosition.getY();
         if(x < 0 || y < 0 || x >= game.getDimension()[0] || y >= game.getDimension()[1]){
@@ -151,8 +150,8 @@ public class GridMasterService {
 
                 // Decrementing opponent score
                 if(newBox.getOwner() != null && !newBox.getOwner().getName().equals(player.getName())){
-                    Player opponent = newBox.getOwner();
-                    opponent.removeFromTrace(newBox.getPosition());
+                    Player opponent = game.getPlayerByName(newBox.getOwner().getName());
+                    opponent.removeFromTrace(newBox.getPosition().getX(), newBox.getPosition().getY());
                     game.updateScoreOfPlayer(opponent.getName(), opponent.getTrace().size());
                 }
             }
