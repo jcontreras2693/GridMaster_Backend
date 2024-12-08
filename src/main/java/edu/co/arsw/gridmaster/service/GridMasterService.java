@@ -26,7 +26,7 @@ public class GridMasterService {
         return gridMasterPersistence.getGameByCode(code);
     }
 
-    public ArrayList<Player> getPlayers(Integer code) throws GridMasterException {
+    public List<Player> getPlayers(Integer code) throws GridMasterException {
         GridMaster game = gridMasterPersistence.getGameByCode(code);
         return new ArrayList<>(game.getPlayers().values());
     }
@@ -155,10 +155,15 @@ public class GridMasterService {
                     game.updateScoreOfPlayer(opponent.getName(), opponent.getTrace().size());
                 }
             }
+            try {
+                gridMasterPersistence.saveGame(game);
+            } catch (GridMasterException e) {
+                throw new GridMasterRuntimeException(e);
+            }
         }
     }
 
-    public void updateGame(Integer code, HashMap<String, Integer> settings) throws GridMasterException{
+    public void updateGame(Integer code, Map<String, Integer> settings) throws GridMasterException{
         GridMaster game = gridMasterPersistence.getGameByCode(code);
         game.updateSettings(settings);
         gridMasterPersistence.saveGame(game);

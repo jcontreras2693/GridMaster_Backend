@@ -3,12 +3,9 @@ package edu.co.arsw.gridmaster.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.Arrays;
-import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class Player {
 
@@ -26,6 +23,7 @@ public class Player {
     private Integer scoreboardPosition;
     @JsonProperty
     private PlayerRole playerRole;
+    private final Random rand;
 
     @JsonCreator
     public Player(@JsonProperty("name") String name, PlayerRole playerRole) {
@@ -36,6 +34,7 @@ public class Player {
         this.lastPosition = new Position(0, 0);
         this.scoreboardPosition = 0;
         this.playerRole = playerRole;
+        this.rand = new Random();
     }
 
     public String getName() {
@@ -87,9 +86,7 @@ public class Player {
     }
 
     public void generatePosition(Integer x, Integer y) {
-        Random rand = new Random();
-        this.currentPosition = new Position(rand.nextInt(x), rand.nextInt(y));
-    }
+        this.currentPosition = new Position(rand.nextInt(x), rand.nextInt(y));    }
 
     public Set<Position> getTrace() {
         return this.trace;
