@@ -17,20 +17,34 @@ import java.util.HashMap;
 @RestController
 @CrossOrigin(origins = "https://gentle-coast-03f74f10f.5.azurestaticapps.net/")
 // @CrossOrigin(origins = "http://localhost:5500/")
-@RequestMapping(value = "/games")
+@RequestMapping
 public class GridMasterController {
 
-    @Autowired
     GridMasterService gridMasterService;
+
+    @Autowired
+    public GridMasterController(GridMasterService gridMasterService){
+        this.gridMasterService = gridMasterService;
+    }
 
     // GET Requests
 
-    @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<?> getAllGames(){
-        return new ResponseEntity<>(gridMasterService.getAllGames(), HttpStatus.ACCEPTED);
+    @GetMapping
+    public ResponseEntity<?> basePage(){
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @RequestMapping(value = "{code}", method = RequestMethod.GET)
+    @GetMapping(value = "/games")
+    public ResponseEntity<?> getAllGames(){
+        try{
+            return new ResponseEntity<>(gridMasterService.getAllGames(), HttpStatus.ACCEPTED);
+        }
+        catch(GridMasterException e){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @GetMapping(value = "/games/{code}")
     public ResponseEntity<?> getGameByCode(@PathVariable Integer code){
         try {
             return new ResponseEntity<>(gridMasterService.getGameByCode(code), HttpStatus.ACCEPTED);
@@ -39,7 +53,7 @@ public class GridMasterController {
         }
     }
 
-    @RequestMapping(value = "{code}/score", method = RequestMethod.GET)
+    @GetMapping(value = "/games/{code}/score")
     public ResponseEntity<?> getScoreboardByCode(@PathVariable Integer code){
         try {
             return new ResponseEntity<>(gridMasterService.getScoreboard(code), HttpStatus.ACCEPTED);
@@ -48,7 +62,7 @@ public class GridMasterController {
         }
     }
 
-    @RequestMapping(value = "{code}/time", method = RequestMethod.GET)
+    @GetMapping(value = "/games/{code}/time")
     public ResponseEntity<?> getTimeByCode(@PathVariable Integer code){
         try {
             return new ResponseEntity<>(gridMasterService.getTime(code), HttpStatus.ACCEPTED);
@@ -57,7 +71,7 @@ public class GridMasterController {
         }
     }
 
-    @RequestMapping(value = "{code}/players", method = RequestMethod.GET)
+    @GetMapping(value = "/games/{code}/players")
     public ResponseEntity<?> getAllPlayers(@PathVariable Integer code){
         try {
             return new ResponseEntity<>(gridMasterService.getPlayers(code), HttpStatus.ACCEPTED);
@@ -66,7 +80,7 @@ public class GridMasterController {
         }
     }
 
-    @RequestMapping(value = "{code}/players/{name}", method = RequestMethod.GET)
+    @GetMapping(value = "/games/{code}/players/{name}")
     public ResponseEntity<?> getPlayerByName(@PathVariable Integer code,
                                              @PathVariable String name){
         try {
@@ -78,7 +92,7 @@ public class GridMasterController {
 
     // POST Requests
 
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping(value = "/games")
     public ResponseEntity<?> createGame() {
         try {
             return new ResponseEntity<>(gridMasterService.createGridMaster(), HttpStatus.CREATED);
@@ -89,7 +103,7 @@ public class GridMasterController {
 
     // PUT REQUESTS
 
-    @RequestMapping(value = "{code}", method = RequestMethod.PUT)
+    @PutMapping(value = "/games/{code}")
     public ResponseEntity<?> updateGame(@PathVariable Integer code,
                                         @RequestBody HashMap<String, Integer> settings){
         try {
@@ -100,7 +114,7 @@ public class GridMasterController {
         }
     }
 
-    @RequestMapping(value = "{code}/started", method = RequestMethod.PUT)
+    @PutMapping(value = "/games/{code}/started")
     public ResponseEntity<?> startGame(@PathVariable Integer code){
         try {
             gridMasterService.startGame(code);
@@ -110,7 +124,7 @@ public class GridMasterController {
         }
     }
 
-    @RequestMapping(value = "{code}/players", method = RequestMethod.PUT)
+    @PutMapping(value = "/games/{code}/players")
     public ResponseEntity<?> addPlayer(@PathVariable Integer code,
                                      @RequestBody Player player){
         try {
@@ -127,7 +141,7 @@ public class GridMasterController {
         }
     }
 
-    @RequestMapping(value = "{code}/players/{name}", method = RequestMethod.PUT)
+    @PutMapping(value = "/games/{code}/players/{name}")
     public ResponseEntity<?> movePlayer(@PathVariable Integer code,
                                         @PathVariable String name,
                                         @RequestBody Position newPosition){
@@ -139,7 +153,7 @@ public class GridMasterController {
         }
     }
 
-    @RequestMapping(value = "{code}/finished", method = RequestMethod.PUT)
+    @PutMapping(value = "/games/{code}/finished")
     public ResponseEntity<?> endGame(@PathVariable Integer code){
         try {
             gridMasterService.endGame(code);
@@ -151,7 +165,8 @@ public class GridMasterController {
 
     // DELETE Requests
 
-    @RequestMapping(value = "{code}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/games/{code}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "{code}")
     public ResponseEntity<?> deleteGame(@PathVariable Integer code){
         try {
             gridMasterService.deleteGridMaster(code);
@@ -161,7 +176,7 @@ public class GridMasterController {
         }
     }
 
-    @RequestMapping(value = "{code}/players/{name}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/games/{code}/players/{name}")
     public ResponseEntity<?> deletePlayer(@PathVariable Integer code, @PathVariable String name){
         try {
             gridMasterService.deletePlayer(code, name);

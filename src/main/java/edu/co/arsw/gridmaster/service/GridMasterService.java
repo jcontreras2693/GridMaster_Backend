@@ -18,7 +18,7 @@ public class GridMasterService {
         this.gridMasterPersistence = gridMasterPersistence;
     }
 
-    public Set<GridMaster> getAllGames(){
+    public Set<GridMaster> getAllGames() throws GridMasterException{
         return gridMasterPersistence.getAllGames();
     }
 

@@ -1,6 +1,5 @@
 package edu.co.arsw.gridmaster.model;
 
-import java.util.Arrays;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Box {

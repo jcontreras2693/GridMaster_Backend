@@ -63,7 +63,7 @@ public class GridMasterPersistence {
         }
     }
 
-    public Set<GridMaster> getAllGames() {
+    public Set<GridMaster> getAllGames() throws GridMasterException {
         Set<GridMaster> games = new HashSet<>();
         try (Jedis jedis = jedisPool.getResource()) {
             Set<String> keys = jedis.keys("*");
@@ -72,7 +72,7 @@ public class GridMasterPersistence {
                     GridMaster game = getGameByCode(Integer.valueOf(key));
                     games.add(game);
                 } catch (GridMasterException e) {
-                    throw new RuntimeException(e);
+                    throw new GridMasterException();
                 }
             }
         }
