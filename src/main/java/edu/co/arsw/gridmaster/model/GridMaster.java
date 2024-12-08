@@ -155,6 +155,7 @@ public class GridMaster {
         int position = 1;
         for(String key : orderedScores.keySet()){
             players.get(key).setScoreboardPosition(position);
+            position++;
         }
     }
 
