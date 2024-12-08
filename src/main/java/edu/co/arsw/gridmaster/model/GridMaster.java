@@ -1,31 +1,42 @@
 package edu.co.arsw.gridmaster.model;
 
-import edu.co.arsw.gridmaster.persistance.Tuple;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class GridMaster {
 
+    @JsonProperty
     private Integer code;
+    @JsonProperty
     private Integer time;
+    @JsonProperty
     private Integer maxPlayers;
+    @JsonProperty
     private ConcurrentHashMap<String, Integer> scores;
+    @JsonProperty
     private ConcurrentHashMap<String, Player> players;
-    private Tuple<Integer, Integer> dimension;
+    @JsonProperty
+    private int[] dimension;
+    @JsonProperty
     private ArrayList<ArrayList<Box>> boxes;
+    @JsonProperty
     private Color color;
+    @JsonProperty
     private GameState gameState;
 
     public GridMaster() {
-        this.code = (int) ((Math.random() * (9999 - 1000) + 1000));
+        SecureRandom random = new SecureRandom();
+        this.code = random.nextInt(10000 - 1000 + 1) + 1000;
         this.scores = new ConcurrentHashMap<>();
         this.players = new ConcurrentHashMap<>();
         this.color = new Color();
         this.gameState = GameState.WAITING_FOR_PLAYERS;
         this.time = 300;
-        this.dimension = new Tuple<>(100, 100);
+        this.dimension = new int[]{50, 50};
         this.maxPlayers = 4;
         this.boxes = new ArrayList<>();
     }
@@ -82,15 +93,15 @@ public class GridMaster {
         this.boxes = boxes;
     }
 
-    public Box getBox(Tuple<Integer, Integer> position){
-        return boxes.get(position.getFirst()).get(position.getSecond());
+    public Box getBox(Position position){
+        return boxes.get(position.getX()).get(position.getY());
     }
 
-    public Tuple<Integer, Integer> getDimension() {
+    public int[] getDimension() {
         return dimension;
     }
 
-    public void setDimension(Tuple<Integer, Integer> dimension) {
+    public void setDimension(int[] dimension) {
         this.dimension = dimension;
     }
 
@@ -110,10 +121,6 @@ public class GridMaster {
         this.gameState = gameState;
     }
 
-    public void decrementTime(){
-        this.time--;
-    }
-
     @Override
     public String toString() {
         return "Game{" +
@@ -126,7 +133,7 @@ public class GridMaster {
 
     public void addPlayer(Player player){
         players.put(player.getName(), player);
-        scores.put(player.getName(), player.getScore().get());
+        scores.put(player.getName(), player.getTrace().size());
     }
 
     public void removePlayer(String name){
@@ -146,25 +153,21 @@ public class GridMaster {
                 ));
         int position = 1;
         for(String key : orderedScores.keySet()){
-            if(!key.equals("EMPTY")){
-                players.get(key).setScoreboardPosition(position);
-                position++;
-            }
+            players.get(key).setScoreboardPosition(position);
         }
     }
 
     public Map<String, Integer> topTen(){
-        ConcurrentHashMap<String, Integer> scores = this.getScores();
         ConcurrentHashMap<String, Integer> topTen = new ConcurrentHashMap<>();
-        int cont = 0;
-        for(String key : scores.keySet()){
-            if(cont == 10){
-                break;
-            }
-            topTen.put(key, scores.get(key));
-            cont++;
-        }
-        Map<String, Integer> newScores = topTen.entrySet()
+//        int cont = 0;
+//        for(String key : scores.keySet()){
+//            if(cont == 10){
+//                break;
+//            }
+//            topTen.put(key, scores.get(key));
+//            cont++;
+//        }
+        Map<String, Integer> newScores = this.scores.entrySet()
                 .stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                 .collect(Collectors.toMap(
@@ -174,31 +177,20 @@ public class GridMaster {
                         LinkedHashMap::new
                 ));
 
-        int sum = scores.values().stream()
-                .mapToInt(a -> a)
-                .sum();
-
-        newScores.put("EMPTY", 10000 - sum);
         return newScores;
     }
 
-    public String getFormatTime(){
-        int time = this.getTime();
-        int minutes = time / 60;
-        int seconds = time % 60;
-        return String.format("%02d:%02d", minutes, seconds);
-    }
-
-    public void updateSettings(HashMap<String, Integer> settings){
+    public void updateSettings(Map<String, Integer> settings){
         this.time = (settings.get("minutes") * 60) + settings.get("seconds");
-        this.dimension = new Tuple<>(settings.get("xDimension"), settings.get("yDimension"));
+        this.dimension = new int[]{settings.get("xDimension"), settings.get("yDimension")};
         this.maxPlayers = settings.get("maxPlayers");
         this.boxes = new ArrayList<>();
-        for(int i = 0; i < dimension.getFirst(); i++){
+        for(int i = 0; i < dimension[0]; i++){
             boxes.add(new ArrayList<>());
-            for(int j = 0; j < dimension.getSecond(); j++){
-                boxes.get(i).add(new Box( new Tuple<>(i, j) ));
+            for(int j = 0; j < dimension[1]; j++){
+                boxes.get(i).add(new Box( new Position(i, j) ));
             }
         }
     }
 }
+

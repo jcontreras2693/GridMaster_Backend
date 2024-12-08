@@ -1,11 +1,11 @@
 package edu.co.arsw.gridmaster.controller;
 
 import edu.co.arsw.gridmaster.model.Player;
+import edu.co.arsw.gridmaster.model.Position;
 import edu.co.arsw.gridmaster.model.exceptions.GameException;
 import edu.co.arsw.gridmaster.model.exceptions.GameNotFoundException;
 import edu.co.arsw.gridmaster.model.exceptions.GridMasterException;
 import edu.co.arsw.gridmaster.model.exceptions.PlayerSaveException;
-import edu.co.arsw.gridmaster.persistance.Tuple;
 import edu.co.arsw.gridmaster.service.GridMasterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -130,7 +130,7 @@ public class GridMasterController {
     @RequestMapping(value = "{code}/players/{name}", method = RequestMethod.PUT)
     public ResponseEntity<?> movePlayer(@PathVariable Integer code,
                                         @PathVariable String name,
-                                        @RequestBody Tuple<Integer, Integer> newPosition){
+                                        @RequestBody Position newPosition){
         try {
             gridMasterService.move(code, name, newPosition);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);

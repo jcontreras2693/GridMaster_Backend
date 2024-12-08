@@ -2,39 +2,39 @@ package edu.co.arsw.gridmaster.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import edu.co.arsw.gridmaster.persistance.Tuple;
 
-import java.util.Objects;
-import java.util.Random;
+import java.security.SecureRandom;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class Player {
 
+    @JsonProperty
     private String name;
+    @JsonProperty
     private int[] color;
-    private AtomicInteger score;
-    private Tuple<Integer, Integer> currentPosition;
-    private Tuple<Integer, Integer> lastPosition;
-    private Set<Tuple<Integer, Integer>> trace;
+    @JsonProperty
+    private Position currentPosition;
+    @JsonProperty
+    private Position lastPosition;
+    @JsonProperty
+    private Set<Position> trace;
+    @JsonProperty
     private Integer scoreboardPosition;
+    @JsonProperty
     private PlayerRole playerRole;
-
-    public Player(String name){
-        this.name = name;
-        this.score = new AtomicInteger(1);
-        this.color = new int[]{0, 0, 0};
-        this.trace = ConcurrentHashMap.newKeySet();
-        this.currentPosition = new Tuple<>(0, 0);
-        this.lastPosition = new Tuple<>(0, 0);
-        this.scoreboardPosition = 0;
-    }
+    private final SecureRandom rand;
 
     @JsonCreator
-    public Player(@JsonProperty("name") String name, PlayerRole playerRole){
-        this(name);
+    public Player(@JsonProperty("name") String name, PlayerRole playerRole) {
+        this.name = name;
+        this.color = new int[]{0, 0, 0};
+        this.trace = ConcurrentHashMap.newKeySet();
+        this.currentPosition = new Position(0, 0);
+        this.lastPosition = new Position(0, 0);
+        this.scoreboardPosition = 0;
         this.playerRole = playerRole;
+        this.rand = new SecureRandom();
     }
 
     public String getName() {
@@ -53,40 +53,24 @@ public class Player {
         this.color = color;
     }
 
-    public AtomicInteger getScore() {
-        return score;
+    public Position getLastPosition() {
+        return this.lastPosition;
     }
 
-    public void setScore(AtomicInteger score) {
-        this.score = score;
-    }
-
-    public int[] getLastPosition() {
-        return new int[]{this.lastPosition.getFirst(), this.lastPosition.getSecond()};
-    }
-
-    public void setLastPosition(Tuple<Integer, Integer> oldPosition){
+    public void setLastPosition(Position oldPosition) {
         this.lastPosition = oldPosition;
     }
 
-    public void incrementScore(){
-        this.score.incrementAndGet();
+    public Position getPosition() {
+        return this.currentPosition;
     }
 
-    public void decrementScore(){
-        this.score.decrementAndGet();
-    }
-
-    public int[] getPosition() {
-        return new int[]{this.currentPosition.getFirst(), this.currentPosition.getSecond()};
-    }
-
-    public void setPosition(Tuple<Integer, Integer> position) {
+    public void setPosition(Position position) {
         this.currentPosition = position;
     }
 
     public Integer getScoreboardPosition() {
-        return scoreboardPosition;
+        return this.scoreboardPosition;
     }
 
     public void setScoreboardPosition(Integer scoreboardPosition) {
@@ -94,7 +78,7 @@ public class Player {
     }
 
     public PlayerRole getPlayerRole() {
-        return playerRole;
+        return this.playerRole;
     }
 
     public void setPlayerRole(PlayerRole playerRole) {
@@ -102,35 +86,39 @@ public class Player {
     }
 
     public void generatePosition(Integer x, Integer y) {
-        Random rand = new Random();
-        this.currentPosition = new Tuple<>(rand.nextInt(x), rand.nextInt(y));
-    }
+        this.currentPosition = new Position(rand.nextInt(x), rand.nextInt(y));    }
 
-    public boolean isLocatedAt(Integer x, Integer y){
-        return (Objects.equals(this.currentPosition.getFirst(), x) && Objects.equals(this.currentPosition.getSecond(), y));
-    }
-
-    public Set<Tuple<Integer, Integer>> getTrace(){
+    public Set<Position> getTrace() {
         return this.trace;
     }
 
-    public void setTrace(Set<Tuple<Integer, Integer>> newTrace){
+    public void setTrace(Set<Position> newTrace) {
         this.trace = newTrace;
     }
 
-    public void addToTrace(Tuple<Integer, Integer> tuple){
-        trace.add(tuple);
+    public void addToTrace(Position tuple) {
+        this.trace.add(tuple);
     }
 
-    public void removeFromTrace(Tuple<Integer, Integer> tuple){
-        trace.remove(tuple);
+    public boolean containsPosition(Integer x, Integer y){
+        for(Position p : trace){
+            if(p.getX() == x && p.getY() == y) return true;
+        }
+        return false;
+    }
+
+    public void removeFromTrace(Integer x, Integer y) {
+        trace.removeIf(p -> p.getX() == x && p.getY() == y);
     }
 
     @Override
     public String toString() {
         return "Player{" +
                 "name='" + name + '\'' +
-                ", position=" + currentPosition.getFirst() + " " + currentPosition.getSecond() +
+                ", score=" + trace.size() +
+                ", currentPosition=" + currentPosition +
+                ", lastPosition=" + lastPosition +
+                ", trace=" + trace.toString() +
                 '}';
     }
 }
