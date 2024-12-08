@@ -137,7 +137,7 @@ public class GridMasterService {
             if(!newBox.isBusy()){
                 player.setPosition(newBox.getPosition());
 
-                if(!player.getTrace().contains(newBox.getPosition())){
+                if(!player.containsPosition(newBox.getPosition().getX(), newBox.getPosition().getY())){
                     player.addToTrace(newBox.getPosition());
                     game.updateScoreOfPlayer(player.getName(), player.getTrace().size());
                 }

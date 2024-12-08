@@ -2,6 +2,7 @@ package edu.co.arsw.gridmaster.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -28,7 +29,8 @@ public class GridMaster {
     private GameState gameState;
 
     public GridMaster() {
-        this.code = (int) ((Math.random() * (9999 - 1000) + 1000));
+        SecureRandom random = new SecureRandom();
+        this.code = random.nextInt(10000 - 1000 + 1) + 1000;
         this.scores = new ConcurrentHashMap<>();
         this.players = new ConcurrentHashMap<>();
         this.color = new Color();

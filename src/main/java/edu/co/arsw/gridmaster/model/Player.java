@@ -3,7 +3,7 @@ package edu.co.arsw.gridmaster.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.Random;
+import java.security.SecureRandom;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -23,7 +23,7 @@ public class Player {
     private Integer scoreboardPosition;
     @JsonProperty
     private PlayerRole playerRole;
-    private final Random rand;
+    private final SecureRandom rand;
 
     @JsonCreator
     public Player(@JsonProperty("name") String name, PlayerRole playerRole) {
@@ -34,7 +34,7 @@ public class Player {
         this.lastPosition = new Position(0, 0);
         this.scoreboardPosition = 0;
         this.playerRole = playerRole;
-        this.rand = new Random();
+        this.rand = new SecureRandom();
     }
 
     public String getName() {
@@ -98,6 +98,13 @@ public class Player {
 
     public void addToTrace(Position tuple) {
         this.trace.add(tuple);
+    }
+
+    public boolean containsPosition(Integer x, Integer y){
+        for(Position p : trace){
+            if(p.getX() == x && p.getY() == y) return true;
+        }
+        return false;
     }
 
     public void removeFromTrace(Integer x, Integer y) {
