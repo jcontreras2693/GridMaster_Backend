@@ -164,8 +164,7 @@ public class GridMasterController {
     }
 
     // DELETE Requests
-
-    @RequestMapping(value = "/games/{code}", method = RequestMethod.DELETE)
+    
     @DeleteMapping(value = "{code}")
     public ResponseEntity<?> deleteGame(@PathVariable Integer code){
         try {
