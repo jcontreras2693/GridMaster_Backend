@@ -18,7 +18,7 @@ public class GridMasterService {
         this.gridMasterPersistence = gridMasterPersistence;
     }
 
-    public Set<GridMaster> getAllGames(){
+    public Set<GridMaster> getAllGames() throws GridMasterException{
         return gridMasterPersistence.getAllGames();
     }
 
@@ -59,7 +59,6 @@ public class GridMasterService {
     public void startGame(Integer code) throws GridMasterException {
         GridMaster game = gridMasterPersistence.getGameByCode(code);
         game.setGameState(GameState.STARTED);
-        // startGame(code);
         gridMasterPersistence.saveGame(game);
     }
 
@@ -131,35 +130,33 @@ public class GridMasterService {
     }
 
     public void changeScore(GridMaster game, Player player, Box newBox, Box oldBox){
-        // Just locking the box
-        synchronized (newBox){
-            // The box is free and nobody is standing there
-            if(!newBox.isBusy()){
-                player.setPosition(newBox.getPosition());
+        // The box is free and nobody is standing there
+        if(newBox.getLock().tryLock() && !newBox.isBusy()){
+            player.setPosition(newBox.getPosition());
 
-                if(!player.containsPosition(newBox.getPosition().getX(), newBox.getPosition().getY())){
-                    player.addToTrace(newBox.getPosition());
-                    game.updateScoreOfPlayer(player.getName(), player.getTrace().size());
-                }
-
-                oldBox.setBusy(false);
-                oldBox.setOwner(player);
-                oldBox.setColor(player.getColor());
-
-                newBox.setBusy(true);
-
-                // Decrementing opponent score
-                if(newBox.getOwner() != null && !newBox.getOwner().getName().equals(player.getName())){
-                    Player opponent = game.getPlayerByName(newBox.getOwner().getName());
-                    opponent.removeFromTrace(newBox.getPosition().getX(), newBox.getPosition().getY());
-                    game.updateScoreOfPlayer(opponent.getName(), opponent.getTrace().size());
-                }
+            if(!player.containsPosition(newBox.getPosition().getX(), newBox.getPosition().getY())){
+                player.addToTrace(newBox.getPosition());
+                game.updateScoreOfPlayer(player.getName(), player.getTrace().size());
             }
-            try {
-                gridMasterPersistence.saveGame(game);
-            } catch (GridMasterException e) {
-                throw new GridMasterRuntimeException(e);
+
+            oldBox.setBusy(false);
+            oldBox.setOwner(player);
+            oldBox.setColor(player.getColor());
+
+            newBox.setBusy(true);
+
+            // Decrementing opponent score
+            if(newBox.getOwner() != null && !newBox.getOwner().getName().equals(player.getName())){
+                Player opponent = game.getPlayerByName(newBox.getOwner().getName());
+                opponent.removeFromTrace(newBox.getPosition().getX(), newBox.getPosition().getY());
+                game.updateScoreOfPlayer(opponent.getName(), opponent.getTrace().size());
             }
+            newBox.getLock().unlock();
+        }
+        try {
+            gridMasterPersistence.saveGame(game);
+        } catch (GridMasterException e) {
+            throw new GridMasterRuntimeException(e);
         }
     }
 

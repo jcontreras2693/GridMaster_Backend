@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.security.SecureRandom;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 public class GridMaster {
@@ -16,13 +17,13 @@ public class GridMaster {
     @JsonProperty
     private Integer maxPlayers;
     @JsonProperty
-    private ConcurrentHashMap<String, Integer> scores;
+    private ConcurrentMap<String, Integer> scores;
     @JsonProperty
-    private ConcurrentHashMap<String, Player> players;
+    private ConcurrentMap<String, Player> players;
     @JsonProperty
     private int[] dimension;
     @JsonProperty
-    private ArrayList<ArrayList<Box>> boxes;
+    private List<List<Box>> boxes;
     @JsonProperty
     private Color color;
     @JsonProperty
@@ -65,19 +66,19 @@ public class GridMaster {
         this.maxPlayers = newMaxPlayers;
     }
 
-    public ConcurrentHashMap<String, Integer> getScores() {
+    public ConcurrentMap<String, Integer> getScores() {
         return scores;
     }
 
-    public void setScores(ConcurrentHashMap<String, Integer> scores) {
+    public void setScores(ConcurrentMap<String, Integer> scores) {
         this.scores = scores;
     }
 
-    public ConcurrentHashMap<String, Player> getPlayers() {
+    public ConcurrentMap<String, Player> getPlayers() {
         return players;
     }
 
-    public void setPlayers(ConcurrentHashMap<String, Player> players) {
+    public void setPlayers(ConcurrentMap<String, Player> players) {
         this.players = players;
     }
 
@@ -85,11 +86,11 @@ public class GridMaster {
         return this.players.get(name);
     }
 
-    public ArrayList<ArrayList<Box>> getBoxes() {
+    public List<List<Box>> getBoxes() {
         return boxes;
     }
 
-    public void setBoxes(ArrayList<ArrayList<Box>> boxes) {
+    public void setBoxes(List<List<Box>> boxes) {
         this.boxes = boxes;
     }
 
@@ -154,20 +155,12 @@ public class GridMaster {
         int position = 1;
         for(String key : orderedScores.keySet()){
             players.get(key).setScoreboardPosition(position);
+            position++;
         }
     }
 
     public Map<String, Integer> topTen(){
-        ConcurrentHashMap<String, Integer> topTen = new ConcurrentHashMap<>();
-//        int cont = 0;
-//        for(String key : scores.keySet()){
-//            if(cont == 10){
-//                break;
-//            }
-//            topTen.put(key, scores.get(key));
-//            cont++;
-//        }
-        Map<String, Integer> newScores = this.scores.entrySet()
+        return this.scores.entrySet()
                 .stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                 .collect(Collectors.toMap(
@@ -176,8 +169,6 @@ public class GridMaster {
                         (e1, e2) -> e1,
                         LinkedHashMap::new
                 ));
-
-        return newScores;
     }
 
     public void updateSettings(Map<String, Integer> settings){
