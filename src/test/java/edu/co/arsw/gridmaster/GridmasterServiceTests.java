@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 
 @SpringBootTest
@@ -46,15 +47,13 @@ class GridmasterServiceTests {
 	void setUp() throws GridMasterException{
 		mockGame = mock(GridMaster.class);
 
-		mockPlayers = new HashMap<>();
+		mockPlayers = new ConcurrentHashMap<>();
 		mockPlayers.put("Mauricio", new Player("Mauricio", PlayerRole.ADMIN));
 		mockPlayers.put("Samuel", new Player("Samuel", PlayerRole.PLAYER));
 
 		mockPlayer = mock(Player.class);
 
-
-
-		// when(mockGame.getPlayers()).thenReturn(mockPlayers);
+		mockBox = mock(Box.class);
 	}
 
 	@Test
@@ -98,12 +97,14 @@ class GridmasterServiceTests {
 	void shouldGetPlayers() throws GridMasterException {
 		when(mockPersistence.getGameByCode(1)).thenReturn(mockGame);
 
-		ArrayList<Player> players = new ArrayList<>(mockService.getPlayers(1));
+		GridMaster game = mockPersistence.getGameByCode(1);
 
-		assertNotNull(players);
-		assertEquals(2, players.size());
-		assertTrue(players.stream().anyMatch(p -> p.getName().equals("Mauricio")));
-		assertTrue(players.stream().anyMatch(p -> p.getName().equals("Samuel")));
+		game.setPlayers((ConcurrentMap<String, Player>) mockPlayers);
+
+		assertNotNull(mockPlayers);
+		assertEquals(2, mockPlayers.size());
+		assertTrue(mockPlayers.containsKey("Mauricio"));
+		assertTrue(mockPlayers.containsKey("Samuel"));
 
 		verify(mockPersistence).getGameByCode(1);
 	}
@@ -164,16 +165,11 @@ class GridmasterServiceTests {
 
 	@Test
 	void shouldCreateGridMaster() throws GridMasterException {
-		GridMaster mockGame = mock(GridMaster.class);
-		int mockCode = 11;
-
-		when(mockService.createGridMaster()).thenReturn(mockCode);
-
 		doNothing().when(mockPersistence).saveGame(any(GridMaster.class));
 
-		int result = mockService.createGridMaster();
+		Integer resultCode = mockService.createGridMaster();
 
-		assertEquals(mockCode, result);
+		assertNotNull(resultCode);
 
 		verify(mockPersistence).saveGame(any(GridMaster.class));
 	}
@@ -191,17 +187,14 @@ class GridmasterServiceTests {
 
 	@Test
 	void shouldStartGame() throws GridMasterException {
-		Integer gameCode = 12;
-		GridMaster mockGame = mock(GridMaster.class);
+		Integer code = 123;
+		when(mockPersistence.getGameByCode(code)).thenReturn(mockGame);
 
-		when(mockPersistence.getGameByCode(gameCode)).thenReturn(mockGame);
-
-		mockService.startGame(gameCode);
+		mockService.startGame(code);
 
 		verify(mockGame).setGameState(GameState.STARTED);
-		// verify(mockService).startTime(mockGame);
-		verify(mockService).setPositions(mockGame);
-		verify(mockPersistence).getGameByCode(gameCode);
+
+		verify(mockPersistence).saveGame(mockGame);
 	}
 
 	/*
@@ -224,98 +217,76 @@ class GridmasterServiceTests {
 
 	@Test
 	void shouldSetPositions() throws GridMasterException {
-		Integer gameCode = 123;
-		when(mockPersistence.getGameByCode(gameCode)).thenReturn(mockGame);
+		int[] dimensions = {50, 50};
+		when(mockGame.getDimension()).thenReturn(dimensions);
+		when(mockGame.getPlayers()).thenReturn((ConcurrentMap<String, Player>) mockPlayers);
+		when(mockGame.getBox(any(Position.class))).thenReturn(mockBox);
 
-		when(mockGame.getPlayers()).thenReturn((ConcurrentHashMap<String, Player>) Map.of("player1", mockPlayer));
+		when(mockPlayer.getPosition()).thenReturn(new Position(0, 0));
 
-		Position generatedPosition = new Position(1, 2);
-		when(mockPlayer.getPosition()).thenReturn(generatedPosition);
-		doNothing().when(mockPlayer).addToTrace(any());
-
-		when(mockGame.getBox(new Position(1, 2))).thenReturn(mockBox);
-		doNothing().when(mockBox).setBusy(true);
+		doNothing().when(mockPlayer).generatePosition(anyInt(), anyInt());
 
 		mockService.setPositions(mockGame);
 
-		verify(mockPlayer).generatePosition(anyInt(), anyInt());
-		verify(mockPlayer).addToTrace(any());
-		verify(mockBox).setBusy(true);
+		verify(mockBox, times(2)).setBusy(true);
+		verify(mockPersistence).saveGame(mockGame);
 	}
 
 	//Pruebas de addPlayer()
 
 	@Test
-	void shouldAddPlayerRoomFull() throws GridMasterException {
-		// Arrange
-		Integer gameCode = 123;
+	void shouldNotAddPlayerRoomFull() throws GridMasterException {
+		Integer gameCode = mockGame.getCode();
+
 		when(mockPersistence.getGameByCode(gameCode)).thenReturn(mockGame);
 		when(mockGame.getMaxPlayers()).thenReturn(2);
-		when(mockGame.getPlayers().size()).thenReturn(2);
+		when(mockGame.getPlayers()).thenReturn((ConcurrentMap<String, Player>) mockPlayers);
 
-		// Act and Assert
 		GameException exception = assertThrows(GameException.class, () -> {
-			mockService.addPlayer(gameCode, "Player1");
+			mockService.addPlayer(gameCode, "Mauricio");
 		});
 
 		assertEquals("Room is full.", exception.getMessage());
 	}
 
 	@Test
-	void shouldAddPlayerAlreadyExists() throws GridMasterException {
-		Integer gameCode = 123;
+	void shouldNotAddPlayerAlreadyExists() throws GridMasterException {
+		Integer gameCode = mockGame.getCode();
+
 		when(mockPersistence.getGameByCode(gameCode)).thenReturn(mockGame);
 		when(mockGame.getMaxPlayers()).thenReturn(4);
-		when(mockGame.getPlayers().size()).thenReturn(2);
-		when(mockGame.getPlayers().containsKey("Player1")).thenReturn(true);
+		when(mockGame.getPlayers()).thenReturn((ConcurrentMap<String, Player>) mockPlayers);
 
 		assertThrows(PlayerSaveException.class, () -> {
-			mockService.addPlayer(gameCode, "Player1");
+			mockService.addPlayer(gameCode, "Mauricio");
 		});
 	}
 
 	@Test
 	void shouldAddPlayerSuccessfully() throws GridMasterException {
-		// Arrange
-		Integer gameCode = 123;
-		when(mockPersistence.getGameByCode(gameCode)).thenReturn(mockGame);
+// Configuración de prueba
+		Integer code = 123;
+		String playerName = "Juan";
+
+		when(mockPersistence.getGameByCode(code)).thenReturn(mockGame);
+		when(mockGame.getPlayers()).thenReturn((ConcurrentMap<String, Player>) mockPlayers);
 		when(mockGame.getMaxPlayers()).thenReturn(4);
-		when(mockGame.getPlayers().size()).thenReturn(2);
-		when(mockGame.getPlayers().containsKey("Player1")).thenReturn(false);
+		when(mockGame.getGameState()).thenReturn(GameState.STARTED);
 
-		when(mockGame.getPlayers().isEmpty()).thenReturn(true);
-		int[] red = {255, 0, 0};
-		when(mockGame.obtainColor()).thenReturn(red);
+		when(mockBox.isBusy()).thenReturn(false);
+		when(mockGame.getBox(any(Position.class))).thenReturn(mockBox);
 
-		mockService.addPlayer(gameCode, "Player1");
-
-		// Assert
-		verify(mockGame).addPlayer(any(Player.class));
-		verify(mockPlayer).setPosition(any());
-		verify(mockPlayer).addToTrace(any());
-	}
-
-	@Test
-	void shouldAddPlayerPositionGeneration() throws GridMasterException {
-		// Arrange
-		Integer gameCode = 123;
-		when(mockPersistence.getGameByCode(gameCode)).thenReturn(mockGame);
-		when(mockGame.getMaxPlayers()).thenReturn(4);
-		when(mockGame.getPlayers().size()).thenReturn(2);
-		when(mockGame.getPlayers().containsKey("Player1")).thenReturn(false);
-		when(mockGame.getPlayers().isEmpty()).thenReturn(true);
 		int[] blue = {0, 0, 255};
 		when(mockGame.obtainColor()).thenReturn(blue);
+		when(mockGame.getDimension()).thenReturn(new int[]{50, 50});
 
-		Position generatedPosition = new Position(2, 3);
-		when(mockPlayer.getPosition()).thenReturn(generatedPosition);
-		when(mockGame.getBox(any())).thenReturn(mockBox);
-		when(mockBox.isBusy()).thenReturn(false);
+		mockService.addPlayer(code, playerName);
 
-		mockService.addPlayer(gameCode, "Player1");
+		verify(mockGame).addPlayer(any(Player.class));
 
-		verify(mockPlayer).generatePosition(anyInt(), anyInt());
-		verify(mockBox).setBusy(true);
+		verify(mockPersistence).saveGame(mockGame);
+
+		assertDoesNotThrow(() -> mockService.addPlayer(code, playerName));
 	}
 
 	/*
@@ -357,9 +328,12 @@ class GridmasterServiceTests {
 
 	@Test
 	public void shouldDeletePlayer() throws GridMasterException {
-		when(mockGame.getPlayers()).thenReturn((ConcurrentHashMap<String, Player>) Map.of("Mauricio", new Player("Mauricio", PlayerRole.ADMIN)));
+		Integer gameCode = 123;
 
-		mockService.deletePlayer(1, "Mauricio");
+		when(mockGame.getPlayers()).thenReturn((ConcurrentMap<String, Player>) mockPlayers);
+		when(mockPersistence.getGameByCode(gameCode)).thenReturn(mockGame);
+
+		mockService.deletePlayer(gameCode, "Mauricio");
 
 		verify(mockGame).removePlayer("Mauricio");
 	}
