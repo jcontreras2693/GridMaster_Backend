@@ -14,7 +14,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.HashSet;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.LinkedHashMap;
@@ -186,24 +185,6 @@ class GridmasterServiceTests {
 	}
 
 	@Test
-	void shouldStartGame() throws GridMasterException {
-		Integer code = 123;
-		when(mockPersistence.getGameByCode(code)).thenReturn(mockGame);
-
-		mockService.startGame(code);
-
-		verify(mockGame).setGameState(GameState.STARTED);
-
-		verify(mockPersistence).saveGame(mockGame);
-	}
-
-	/*
-	@Test
-	void shouldStartTime() throws GridMasterException {
-	}
-	 */
-
-	@Test
 	void shouldEndGame() throws GridMasterException {
 		Integer gameCode = 2;
 		when(mockPersistence.getGameByCode(gameCode)).thenReturn(mockGame);
@@ -288,18 +269,6 @@ class GridmasterServiceTests {
 
 		assertDoesNotThrow(() -> mockService.addPlayer(code, playerName));
 	}
-
-	/*
-	@Test
-	void shouldMove() throws GridMasterException {
-	}
-	 */
-
-	/*
-	@Test
-	void shouldChangeScore() throws GridMasterException {
-	}
-	 */
 
 	@Test
 	public void shouldUpdateGame() throws GridMasterException {

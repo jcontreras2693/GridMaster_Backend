@@ -58,6 +58,7 @@ public class GridMasterService {
 
     public void startGame(Integer code) throws GridMasterException {
         GridMaster game = gridMasterPersistence.getGameByCode(code);
+        setPositions(game);
         game.setGameState(GameState.STARTED);
         gridMasterPersistence.saveGame(game);
     }
@@ -70,16 +71,11 @@ public class GridMasterService {
     }
 
     public void setPositions(GridMaster game) throws GridMasterException {
-        ArrayList<int[]> positions = new ArrayList<>();
-        int[] position;
         for(Player i : game.getPlayers().values()){
-            do {
-                i.generatePosition(game.getDimension()[0], game.getDimension()[1]);
-                position = new int[]{i.getPosition().getX(), i.getPosition().getY()};
-            } while (positions.contains(position));
-            positions.add(position);
-            i.addToTrace(new Position(position[0], position[1]));
-            game.getBox(new Position(position[0], position[1])).setBusy(true);
+            i.generatePosition(game.getDimension()[0], game.getDimension()[1]);
+            i.addToTrace(new Position(i.getPosition().getX(), i.getPosition().getY()));
+            game.getBox(new Position(i.getPosition().getX(), i.getPosition().getY())).setBusy(true);
+            // System.out.println("Player: " + i.getName() + ", Position: " + i.getPosition());
         }
         gridMasterPersistence.saveGame(game);
     }
