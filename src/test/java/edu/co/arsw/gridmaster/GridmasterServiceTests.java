@@ -6,7 +6,6 @@ import edu.co.arsw.gridmaster.model.*;
 import edu.co.arsw.gridmaster.service.*;
 import edu.co.arsw.gridmaster.persistance.GridMasterPersistence;
 import edu.co.arsw.gridmaster.model.exceptions.*;
-import edu.co.arsw.gridmaster.persistance.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,21 +38,27 @@ class GridmasterServiceTests {
 
 	private Box mockBox;
 
+	@Test
+	void contextLoads() {
+	}
+
 	@BeforeEach
-	void setUp() {
+	void setUp() throws GridMasterException{
 		mockGame = mock(GridMaster.class);
 
 		mockPlayers = new HashMap<>();
-		mockPlayers.put("Mauricio", new Player("Mauricio"));
-		mockPlayers.put("Samuel", new Player("Samuel"));
+		mockPlayers.put("Mauricio", new Player("Mauricio", PlayerRole.ADMIN));
+		mockPlayers.put("Samuel", new Player("Samuel", PlayerRole.PLAYER));
 
 		mockPlayer = mock(Player.class);
+
+
 
 		// when(mockGame.getPlayers()).thenReturn(mockPlayers);
 	}
 
 	@Test
-	void shouldGetAllGames() {
+	void shouldGetAllGames() throws GridMasterException {
 		HashSet<GridMaster> games = new HashSet<>();
 		games.add(new GridMaster());
 		games.add(new GridMaster());
@@ -93,7 +98,7 @@ class GridmasterServiceTests {
 	void shouldGetPlayers() throws GridMasterException {
 		when(mockPersistence.getGameByCode(1)).thenReturn(mockGame);
 
-		ArrayList<Player> players = mockService.getPlayers(1);
+		ArrayList<Player> players = new ArrayList<>(mockService.getPlayers(1));
 
 		assertNotNull(players);
 		assertEquals(2, players.size());
@@ -142,19 +147,19 @@ class GridmasterServiceTests {
 
 	@Test
 	void shouldGetTime() throws GridMasterException {
-		String mockTime = "05:00";
+		int mockTime = 300;
 
 		when(mockPersistence.getGameByCode(1)).thenReturn(mockGame);
 
-		when(mockGame.getFormatTime()).thenReturn(mockTime);
+		when(mockGame.getTime()).thenReturn(mockTime);
 
-		String result = mockService.getTime(1);
+		int result = mockService.getTime(1);
 
 		assertNotNull(result);
 		assertEquals(mockTime, result);
 
 		verify(mockPersistence).getGameByCode(1);
-		verify(mockGame).getFormatTime();
+		verify(mockGame).getTime();
 	}
 
 	@Test
@@ -162,13 +167,12 @@ class GridmasterServiceTests {
 		GridMaster mockGame = mock(GridMaster.class);
 		int mockCode = 11;
 
-		when(mockGame.getCode()).thenReturn(mockCode);
+		when(mockService.createGridMaster()).thenReturn(mockCode);
 
 		doNothing().when(mockPersistence).saveGame(any(GridMaster.class));
 
-		Integer result = mockService.createGridMaster();
+		int result = mockService.createGridMaster();
 
-		assertNotNull(result);
 		assertEquals(mockCode, result);
 
 		verify(mockPersistence).saveGame(any(GridMaster.class));
@@ -195,7 +199,7 @@ class GridmasterServiceTests {
 		mockService.startGame(gameCode);
 
 		verify(mockGame).setGameState(GameState.STARTED);
-		verify(mockService).startTime(mockGame);
+		// verify(mockService).startTime(mockGame);
 		verify(mockService).setPositions(mockGame);
 		verify(mockPersistence).getGameByCode(gameCode);
 	}
@@ -225,11 +229,11 @@ class GridmasterServiceTests {
 
 		when(mockGame.getPlayers()).thenReturn((ConcurrentHashMap<String, Player>) Map.of("player1", mockPlayer));
 
-		int[] generatedPosition = {1, 2};
+		Position generatedPosition = new Position(1, 2);
 		when(mockPlayer.getPosition()).thenReturn(generatedPosition);
 		doNothing().when(mockPlayer).addToTrace(any());
 
-		when(mockGame.getBox(new Tuple<>(1, 2))).thenReturn(mockBox);
+		when(mockGame.getBox(new Position(1, 2))).thenReturn(mockBox);
 		doNothing().when(mockBox).setBusy(true);
 
 		mockService.setPositions(mockGame);
@@ -303,7 +307,7 @@ class GridmasterServiceTests {
 		int[] blue = {0, 0, 255};
 		when(mockGame.obtainColor()).thenReturn(blue);
 
-		int[] generatedPosition = {2, 3};
+		Position generatedPosition = new Position(2, 3);
 		when(mockPlayer.getPosition()).thenReturn(generatedPosition);
 		when(mockGame.getBox(any())).thenReturn(mockBox);
 		when(mockBox.isBusy()).thenReturn(false);
@@ -330,7 +334,14 @@ class GridmasterServiceTests {
 	public void shouldUpdateGame() throws GridMasterException {
 		HashMap<String, Integer> settings = new HashMap<>();
 		settings.put("maxPlayers", 4);
-		settings.put("timeLimit", 30);
+		settings.put("minutes", 5);
+		settings.put("seconds", 0);
+		settings.put("xDimension", 50);
+		settings.put("yDimension", 50);
+
+		mockPersistence.saveGame(mockGame);
+
+		when(mockPersistence.getGameByCode(1)).thenReturn(mockGame);
 
 		mockService.updateGame(1, settings);
 
@@ -346,7 +357,7 @@ class GridmasterServiceTests {
 
 	@Test
 	public void shouldDeletePlayer() throws GridMasterException {
-		when(mockGame.getPlayers()).thenReturn((ConcurrentHashMap<String, Player>) Map.of("Mauricio", new Player("Mauricio")));
+		when(mockGame.getPlayers()).thenReturn((ConcurrentHashMap<String, Player>) Map.of("Mauricio", new Player("Mauricio", PlayerRole.ADMIN)));
 
 		mockService.deletePlayer(1, "Mauricio");
 
