@@ -26,7 +26,7 @@ jobs:
         run: echo "CACHE_PASSWORD=${{ secrets.CACHE_PASSWORD }}" >> $GITHUB_ENV
 
       - name: Run SonarCloud Analysis
-        run: mvn clean verify sonar:sonar -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+        run: mvn sonar:sonar -Pcoverage
 
       - name: Build with Maven
         run: mvn clean install
