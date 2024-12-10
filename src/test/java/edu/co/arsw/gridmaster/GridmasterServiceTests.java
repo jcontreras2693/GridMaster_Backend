@@ -38,10 +38,11 @@ class GridmasterServiceTests {
 
 	@Test
 	void contextLoads() {
+		// Test para verificar que el contexto de la aplicación se carga correctamente
 	}
 
 	@BeforeEach
-	void setUp() throws GridMasterException{
+	void setUp() {
 		mockGame = mock(GridMaster.class);
 
 		mockPlayers = new ConcurrentHashMap<>();
@@ -153,7 +154,6 @@ class GridmasterServiceTests {
 
 		int result = mockService.getTime(1);
 
-		assertNotNull(result);
 		assertEquals(mockTime, result);
 
 		verify(mockPersistence).getGameByCode(1);
@@ -269,7 +269,7 @@ class GridmasterServiceTests {
 	}
 
 	@Test
-	public void shouldUpdateGame() throws GridMasterException {
+	void shouldUpdateGame() throws GridMasterException {
 		HashMap<String, Integer> settings = new HashMap<>();
 		settings.put("maxPlayers", 4);
 		settings.put("minutes", 5);
@@ -287,14 +287,14 @@ class GridmasterServiceTests {
 	}
 
 	@Test
-	public void shouldDeleteGridMaster() throws GridMasterException {
+	void shouldDeleteGridMaster() throws GridMasterException {
 		mockService.deleteGridMaster(1);
 
 		verify(mockPersistence).deleteGame(1);
 	}
 
 	@Test
-	public void shouldDeletePlayer() throws GridMasterException {
+	void shouldDeletePlayer() throws GridMasterException {
 		Integer gameCode = 123;
 
 		when(mockGame.getPlayers()).thenReturn((ConcurrentMap<String, Player>) mockPlayers);
