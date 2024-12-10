@@ -26,7 +26,6 @@ class GridmasterServiceTests {
 
 	@Mock
 	private GridMasterPersistence mockPersistence;
-
 	@InjectMocks
 	private GridMasterService mockService;
 
