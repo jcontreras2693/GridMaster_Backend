@@ -25,9 +25,6 @@ jobs:
       - name: Set up Redis password environment variable
         run: echo "CACHE_PASSWORD=${{ secrets.CACHE_PASSWORD }}" >> $GITHUB_ENV
 
-      - name: Run SonarCloud Analysis
-        run: mvn sonar:sonar -Pcoverage
-
       - name: Build with Maven
         run: mvn clean install
 
