@@ -28,7 +28,6 @@ public class GridMasterController {
     }
 
     // GET Requests
-
     @GetMapping
     public ResponseEntity<?> basePage(){
         return new ResponseEntity<>(HttpStatus.OK);
