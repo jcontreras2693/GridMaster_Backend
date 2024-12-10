@@ -28,7 +28,6 @@ class GridmasterServiceTests {
 	private GridMasterPersistence mockPersistence;
 	@InjectMocks
 	private GridMasterService mockService;
-
 	private GridMaster mockGame;
 
 	private Map<String, Player> mockPlayers;
